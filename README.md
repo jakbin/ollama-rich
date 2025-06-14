@@ -1,2 +1,3 @@
 # ollama-rich
-ollama client with rich library
+
+A feature-rich Ollama client with enhanced terminal UI using the Rich library
