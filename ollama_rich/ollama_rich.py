@@ -24,11 +24,12 @@ class OllamaRichClient:
 
 
     def chat(self, model, messages):
-        response = self.client.chat(
-            model=model,
-            stream=False,
-            messages=messages,
-        )
+        with console.status("[bold green]Thinking...", spinner="dots"):
+            response = self.client.chat(
+                model=model,
+                stream=False,
+                messages=messages,
+            )
         return Markdown(response['message']['content'])
     
     def models(self):
