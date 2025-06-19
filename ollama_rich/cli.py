@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from ollama_rich.ollama_rich import OllamaRichClient
 from ollama_rich.utils import to_gb
+from rich.panel import Panel
 
 console = Console()
 
@@ -13,6 +14,10 @@ def main():
 
     # List models
     subparsers.add_parser("models", help="List all available models")
+
+    # Info about a specific model
+    model_parser = subparsers.add_parser("model", help="Get information about a specific model")
+    model_parser.add_argument("model", help="Model name to get information about")
 
     # Chat command
     chat_parser = subparsers.add_parser("chat", help="Chat with a model")
@@ -38,7 +43,28 @@ def main():
                 )
             console.print(table)
         else:
-            console.print("[red]No models found.[/red]")
+            console.print("[bold red]No models found.[/ bold red]")
+    
+    elif args.command == "model":
+        model_info = client.model_info(args.model)
+        if model_info:
+            table = Table(show_header=True, header_style="bold magenta")
+            table.add_column("Field", style="red")
+            table.add_column("Value", style="blue")
+            for key, value in model_info.dict().items():
+                if key == "details" and isinstance(value, dict):
+                    details_table = Table(show_header=True, header_style="bold cyan")
+                    details_table.add_column("Detail", style="yellow")
+                    details_table.add_column("Value", style="green")
+                    for d_key, d_value in value.items():
+                        details_table.add_row(str(d_key), str(d_value))
+                    table.add_row(key, Panel(details_table, title="Details", expand=False))
+                else:
+                    table.add_row(key, str(value))
+            console.print(table)
+        else:
+            console.print(f"[bold red]Model '{args.model}' not found.[/bold red]")
+
     elif args.command == "chat":
         messages = [{"role": "user", "content": args.message}]
         if args.stream:
