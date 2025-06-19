@@ -7,7 +7,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="Jak BIn",
-    packages=find_packages(),
+    packages=["ollama_rich"],
     install_requires=[
         "rich",
         "ollama",
