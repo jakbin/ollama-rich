@@ -33,9 +33,21 @@ class OllamaRichClient:
         return Markdown(response['message']['content'])
     
     def models(self):
-        return self.client.list()
+        try:
+            return self.client.list()
+        except ConnectionError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            return []
 
-
-
-
+    def model_info(self, model):
+        try:
+            models = self.client.list()
+            for m in models.get('models', []):
+                if m.get('model') == model:
+                    return m
+            console.print(f"[bold red]Model '{model}' not found.[/bold red]")
+            return {}
+        except ConnectionError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            return {}
 
