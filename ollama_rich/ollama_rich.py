@@ -38,6 +38,14 @@ class OllamaRichClient:
         except ConnectionError as e:
             console.print(f"[bold red]Error:[/bold red] {e}")
             return []
+        
+    def models_name_list(self):
+        try:
+            models = self.client.list()
+            return [model.get('model') for model in models.get('models', [])]
+        except ConnectionError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            return []
 
     def model_info(self, model):
         try:
