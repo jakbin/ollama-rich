@@ -1,8 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup
+from ollama_rich import __version__
 
 setup(
     name="ollama-rich",
-    version="0.1.0",
+    version=__version__,
     description="A feature-rich Ollama client with enhanced terminal UI using the Rich library.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
