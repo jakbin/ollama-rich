@@ -17,6 +17,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ollama-rich=ollama_rich.cli:main',
+            'or=ollama_rich.cli:main',
         ],
     },
     classifiers=[
