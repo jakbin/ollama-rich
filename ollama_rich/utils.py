@@ -37,7 +37,12 @@ def model_info_table(model: str, model_info: dict):
 					details_table.add_row(str(d_key), str(d_value))
 				table.add_row(key, Panel(details_table, title="Details", expand=False))
 			else:
-				table.add_row(key, str(value))
+				if key == "size":
+					value = f"{to_gb(value)} GB"
+					table.add_row(key, value)
+				else:
+					table.add_row(key, str(value))
+		console.print(f"[bold green]Model Information for '{model}':[/bold green]")
 		console.print(table)
 	else:
 		console.print(f"[bold red]Model '{model}' not found.[/bold red]")
