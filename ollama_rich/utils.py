@@ -1,6 +1,7 @@
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.progress import Progress, BarColumn, DownloadColumn, TextColumn, TimeRemainingColumn, TransferSpeedColumn
 
 console = Console()
 
@@ -46,3 +47,11 @@ def model_info_table(model: str, model_info: dict):
 		console.print(table)
 	else:
 		console.print(f"[bold red]Model '{model}' not found.[/bold red]")
+
+progress = Progress(
+    TextColumn("[bold blue]{task.description}"),
+    BarColumn(),
+    DownloadColumn(),
+    TransferSpeedColumn(),
+    TimeRemainingColumn(),
+)
