@@ -1,8 +1,6 @@
 import argparse
 from rich.console import Console
-from ollama_rich import OllamaRichClient
-from ollama_rich import models_table, model_info_table
-from ollama_rich import __version__
+from ollama_rich import OllamaRichClient, model_info_table, models_table, __version__
 from ollama_rich.config import get_config, setup_config
 
 console = Console()
@@ -24,10 +22,14 @@ def main():
     model_parser = subparsers.add_parser("model", help="Get information about a specific model")
     model_parser.add_argument("model", help="Model name to get information about")
 
+    pull_model = subparsers.add_parser("pull", help="Pull a model from the Ollama library")
+    pull_model.add_argument("model", help="Model name to pull")
+    pull_model.add_argument("-ns", "--nostream", action='store_true', help="Disable stream output")
+
     # Chat command
     chat_parser = subparsers.add_parser("chat", help="Chat with a model")
-    chat_parser.add_argument("model", help="Model name")
     chat_parser.add_argument("message", help="Message to send to the model")
+    chat_parser.add_argument("-m","--model", help="Model name")
     chat_parser.add_argument("--stream", action="store_true", help="Stream the response live")
 
     parser.add_argument("--version", action="version", version="Ollama Rich Client CLI version " + __version__, 
@@ -46,15 +48,31 @@ def main():
             models_table(models)
         
         elif args.command == "model":
-            model_info = client.model_info(args.model)
-            model_info_table(args.model, model_info)
+            if not args.model:
+                model = get_config().get('ollama', {}).get('model', 'llama2')
+            else:
+                model = args.model
+            model_info = client.model_info(model)
+            model_info_table(model, model_info)
+        
+        elif args.command == "pull":
+            if args.nostream:
+                stream = False
+            else:
+                stream = True
+            client.pull(args.model, stream=stream)
 
         elif args.command == "chat":
+            if not args.model:
+                model = get_config().get('ollama', {}).get('model', 'llama2')
+            else:
+                model = args.model
+            console.print(f"[bold green]Using model:[/bold green] {model}")
             messages = [{"role": "user", "content": args.message}]
             if args.stream:
-                client.chat_and_display(args.model, messages)
+                client.chat_and_display(model, messages)
             else:
-                md = client.chat(args.model, messages)
+                md = client.chat(model, messages)
                 console.print(md)
         else:
             parser.print_help()
