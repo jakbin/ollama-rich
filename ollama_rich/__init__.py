@@ -1,4 +1,4 @@
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from .ollama_rich import OllamaRichClient
 from .utils import models_table, model_info_table
