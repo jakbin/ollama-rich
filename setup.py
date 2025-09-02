@@ -12,6 +12,7 @@ setup(
     install_requires=[
         "rich",
         "ollama",
+        "pyyaml",
     ],
     python_requires=">=3.7",
     entry_points={
