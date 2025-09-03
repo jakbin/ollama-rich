@@ -12,29 +12,35 @@ class OllamaRichClient:
     def __init__(self, host=''):
         self.client = Client(host=host)
 
-    def chat_and_display(self, model, messages):
-        response = self.client.chat(
-            model=model,
-            stream=True,
-            messages=messages,
-        )
+    def stream_chat(self, model, messages):
+        try:
+            response = self.client.chat(
+                model=model,
+                stream=True,
+                messages=messages,
+            )
 
-        full_content = ""
-        with Live(Markdown(full_content), console=console, refresh_per_second=2) as live:
-            for chunk in response:
-                full_content += chunk['message']['content']
-                live.update(Markdown(full_content))
+            full_content = ""
+            with Live(Markdown(full_content), console=console, refresh_per_second=2) as live:
+                for chunk in response:
+                    full_content += chunk['message']['content']
+                    live.update(Markdown(full_content))
+        except ResponseError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
 
 
     def chat(self, model, messages):
-        with console.status("[bold green]Generating response...", spinner="dots"):
-            response = self.client.chat(
-                model=model,
-                stream=False,
-                messages=messages,
-            )
-        return Markdown(response['message']['content'])
-    
+        try:
+            with console.status("[bold green]Generating response...", spinner="dots"):
+                response = self.client.chat(
+                    model=model,
+                    stream=False,
+                    messages=messages,
+                )
+            return Markdown(response['message']['content'])
+        except ResponseError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+
     def models(self):
         try:
             return self.client.list()
