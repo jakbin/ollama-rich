@@ -92,7 +92,7 @@ def main():
             console.print(f"[bold green]Using model:[/bold green] {model}")
             messages = [{"role": "user", "content": args.message}]
             if args.stream:
-                client.chat_and_display(model, messages)
+                client.stream_chat(model, messages)
             else:
                 md = client.chat(model, messages)
                 console.print(md)
