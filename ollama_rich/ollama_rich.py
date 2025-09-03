@@ -1,8 +1,10 @@
 from ollama import Client
+from ollama._types import ResponseError
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.live import Live
-from ollama_rich.utils import progress
+from .utils import progress
+
 
 console = Console()
 
@@ -25,7 +27,7 @@ class OllamaRichClient:
 
 
     def chat(self, model, messages):
-        with console.status("[bold green]Thinking...", spinner="dots"):
+        with console.status("[bold green]Generating response...", spinner="dots"):
             response = self.client.chat(
                 model=model,
                 stream=False,
@@ -54,11 +56,35 @@ class OllamaRichClient:
             for m in models.get('models', []):
                 if m.get('model') == model:
                     return m
-            console.print(f"[bold red]Model '{model}' not found.[/bold red]")
             return {}
         except ConnectionError as e:
             console.print(f"[bold red]Error:[/bold red] {e}")
             return {}
+    
+    def ps(self):
+        try:
+            return self.client.ps()
+        except ConnectionError as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            return []
+    
+    def load(self, model):
+        try:
+            # Show spinner with Rich
+            with console.status(
+                f"[bold cyan]⏳ Please wait... loading model [yellow]{model}[/yellow] into memory[/bold cyan]",
+                spinner="dots"
+            ):
+                res = self.client.generate(model=model, prompt="")  # empty prompt loads model
+
+            if res.get("done", False):
+                console.print(f"[bold green]✅ Model '{model}' loaded into memory successfully.[/bold green]")
+            else:
+                console.print(f"[bold red]❌ Error loading model '{model}': {res.get('status', 'Unknown error')}[/bold red]")
+        except ResponseError as e:
+            console.print(f"[bold red]❌ Response error while loading model '{model}': {e}[/bold red]")
+        except ConnectionError as e:
+            console.print(f"[bold red]❌ Connection error while loading model '{model}': {e}[/bold red]")
 
     def pull(self, model, stream: bool = True):
         try:
@@ -87,3 +113,20 @@ class OllamaRichClient:
                         console.print(f"[bold red]Error pulling model '{model}': {res['status']}[/bold red]")
         except ConnectionError as e:
             console.print(f"[bold red]Error pulling model '{model}': {e}[/bold red]")
+
+    def delete(self, model):
+        try:
+            confirm = console.input(f"[bold yellow]Are you sure you want to delete the model '{model}'? This action cannot be undone. (y/n): [/bold yellow]")
+            if confirm.lower() != 'y':
+                console.print("[bold cyan]Deletion cancelled by user.[/bold cyan]")
+                return
+            console.print(f"[bold green]Deleting model [bold yellow]{model}[/bold yellow]...[/bold green]")
+            res = self.client.delete(model)
+            if res["status"] == "success":
+                console.print(f"[bold green]✅ Model '{model}' deleted successfully.[/bold green]")
+            else:
+                console.print(f"[bold red]❌ Error deleting model '{model}': {res['status']}[/bold red]")
+        except ResponseError as e:
+            console.print(f"[bold red]❌ Response error while deleting model '{model}': {e}[/bold red]")
+        except ConnectionError as e:
+            console.print(f"[bold red]❌ Connection error while deleting model '{model}': {e}[/bold red]")
