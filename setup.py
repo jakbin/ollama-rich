@@ -10,6 +10,7 @@ setup(
     author="Jak BIn",
     packages=["ollama_rich"],
     install_requires=[
+        "appdirs",
         "rich",
         "ollama",
         "pyyaml",
