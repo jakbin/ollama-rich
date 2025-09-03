@@ -1,6 +1,7 @@
 import argparse
 from rich.console import Console
-from ollama_rich import OllamaRichClient, model_info_table, models_table, __version__
+from ollama_rich import OllamaRichClient, __version__
+from ollama_rich.utils import model_info_table, models_table, ps_table
 from ollama_rich.config import get_config, setup_config
 
 console = Console()
@@ -18,6 +19,9 @@ def main():
     # List models
     subparsers.add_parser("models", help="List all available models")
 
+    # List of models loaded into memory
+    subparsers.add_parser("ps", help="List of models loaded into memory")
+
     # Info about a specific model
     model_parser = subparsers.add_parser("model", help="Get information about a specific model")
     model_parser.add_argument("model", help="Model name to get information about")
@@ -26,11 +30,19 @@ def main():
     pull_model.add_argument("model", help="Model name to pull")
     pull_model.add_argument("-ns", "--nostream", action='store_true', help="Disable stream output")
 
+    # delete a model
+    delete_model = subparsers.add_parser("delete", help="Delete a model from local storage")
+    delete_model.add_argument("model", help="Model name to delete")
+
+    # load model into memory
+    load_model = subparsers.add_parser("load", help="Load a model into memory")
+    load_model.add_argument("model", help="Model name to load")
+
     # Chat command
     chat_parser = subparsers.add_parser("chat", help="Chat with a model")
     chat_parser.add_argument("message", help="Message to send to the model")
     chat_parser.add_argument("-m","--model", help="Model name")
-    chat_parser.add_argument("--stream", action="store_true", help="Stream the response live")
+    chat_parser.add_argument("-s", "--stream", action="store_true", help="Stream the response live")
 
     parser.add_argument("--version", action="version", version="Ollama Rich Client CLI version " + __version__, 
                         help="Show the version of the Ollama Rich Client CLI")
@@ -46,6 +58,10 @@ def main():
         elif args.command == "models":
             models = client.models()
             models_table(models)
+
+        elif args.command == "ps":
+            response = client.ps()
+            ps_table(response)
         
         elif args.command == "model":
             if not args.model:
@@ -61,10 +77,16 @@ def main():
             else:
                 stream = True
             client.pull(args.model, stream=stream)
+        
+        elif args.command == "delete":
+            client.delete(args.model)
+
+        elif args.command == "load":
+            client.load(args.model)
 
         elif args.command == "chat":
             if not args.model:
-                model = get_config().get('ollama', {}).get('model', 'llama2')
+                model = get_config().get('ollama', {}).get('model')
             else:
                 model = args.model
             console.print(f"[bold green]Using model:[/bold green] {model}")
