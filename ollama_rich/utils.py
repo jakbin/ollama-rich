@@ -46,12 +46,38 @@ def model_info_table(model: str, model_info: dict):
 		console.print(f"[bold green]Model Information for '{model}':[/bold green]")
 		console.print(table)
 	else:
-		console.print(f"[bold red]Model '{model}' not found.[/bold red]")
+		console.print(f"[bold red]❌ Model '{model}' not found.[/bold red]")
+
+def ps_table(response):
+	if response and getattr(response, "models", []):
+		table = Table(show_header=True, header_style="bold magenta")
+		table.add_column("Model", style="cyan", no_wrap=True)
+		# table.add_column("Digest", style="blue")
+		table.add_column("Expires At", style="yellow")
+		table.add_column("Size (GB)", style="green")
+		table.add_column("Size VRAM (GB)", style="magenta")
+		# table.add_column("Context Length", style="red")
+		# table.add_column("Details", style="white")
+
+		for model in response.models:
+			table.add_row(
+				str(model.model),
+				# str(model.digest),
+				str(model.expires_at),
+				str(to_gb(model.size)),
+				str(to_gb(model.size_vram)),
+				# str(model.context_length),
+				# str(model.details),
+			)
+
+		console.print(table)
+	else:
+		console.print("[bold red]No model loaded into memory.[/bold red]")
 
 progress = Progress(
-    TextColumn("[bold blue]{task.description}"),
-    BarColumn(),
-    DownloadColumn(),
-    TransferSpeedColumn(),
-    TimeRemainingColumn(),
+	TextColumn("[bold blue]{task.description}"),
+	BarColumn(),
+	DownloadColumn(),
+	TransferSpeedColumn(),
+	TimeRemainingColumn(),
 )
